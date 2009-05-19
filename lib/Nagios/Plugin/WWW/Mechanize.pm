@@ -1,4 +1,5 @@
 package Nagios::Plugin::WWW::Mechanize;
+use 5.006;
 use warnings;
 use strict;
 use Nagios::Plugin;
@@ -7,9 +8,6 @@ use Time::HiRes qw(gettimeofday tv_interval);
 use base qw(Nagios::Plugin);
 
 our $VERSION = "0.10";
-
-1;
-#__END__
 
 =head1 NAME
 
@@ -28,7 +26,7 @@ Nagios::Plugin::WWW::Mechanize - Login to a web page as a user and get data as a
     value => $number_of_users,
   );
   $np->nagios_exit(
-    OK,
+    0,   # Can't use constants like OK from Nagios::Plugin just yet - please help fix!
     "Number of mailing list users: $number_of_users"
   );
 
@@ -64,9 +62,11 @@ sub new {
 	my $mech;
 	if ($_ = delete $opts{mech}) {
 		if (ref $_ eq "HASH") {
-			$mech = $mech->new(%$_);
+			$mech = WWW::Mechanize->new(%$_);
 		} elsif ( $_->isa("WWW::Mechanize") ) {
 			$mech = $_;
+		} else {
+			die "Invalid object passed into mech option";
 		}
 	}
 	unless ($mech) {
@@ -120,16 +120,24 @@ sub mech {
 
 =item get( @args )
 
-Calls $self->mech->get( @args ). If $self->include_time is set, will start a timer before the get, calculate the duration, and add
+Calls $self->mech->get( @args ). If $self->include_time is set, will start a timer before the get, calculate the duration, and adds
 it to a total timer.
+
+If the mech->get call failed, will call nagios_exit with a CRITICAL error.
+
+Returns the value from mech->get.
 
 =cut
 
 sub get {
 	my ($self, @args) = @_;
 	$self->timer_start;
-	$self->mech->get( @args );
+	my $res = $self->mech->get( @args );
+	unless ($self->mech->success) {
+		$self->nagios_exit( CRITICAL, $self->mech->content );
+	}
 	$self->timer_end;
+	$res;
 }
 	
 =item submit_form( @args )
@@ -141,8 +149,12 @@ Similar to get.
 sub submit_form {
 	my ($self, @args ) = @_;
 	$self->timer_start;
-	$self->mech->submit_form( @args );
+	my $res = $self->mech->submit_form( @args );
+	unless ($self->mech->success) {
+		$self->nagios_exit( CRITICAL, $self->mech->content );
+	}
 	$self->timer_end;
+	$res;
 }
 
 =item content
@@ -161,7 +173,9 @@ Override to add performance data for time if required
 
 sub nagios_exit {
 	my ($self, @args) = @_;
-	if ($self->include_time) {
+	# Only add the performance data if the last mech call was successful
+	# IE, only print time if everything was okay
+	if ($self->include_time && $self->mech->success) {
 		$self->add_perfdata(
 			label => "time",
 			value => sprintf("%0.3f", $self->total_time),
