@@ -7,7 +7,6 @@ use FindBin qw($Bin);
 use lib "$Bin/lib";
 
 use Test::More;
-use Test::Deep;
 
 plan tests => 4;
 

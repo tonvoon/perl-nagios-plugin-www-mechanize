@@ -7,7 +7,6 @@ use FindBin qw($Bin);
 use lib "$Bin/lib";
 
 use Test::More;
-use Test::Deep;
 use Nagios::Plugin::WWW::Mechanize;
 
 plan tests => 17;
