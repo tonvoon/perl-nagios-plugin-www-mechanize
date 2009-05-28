@@ -1,4 +1,8 @@
 Changes for Perl extension Nagios-Plugin-WWW-Mechanize
 
+0.11	2009-05-28
+	- Removed unnecessary Test::Deep from tests
+	- Increased timing for latency test
+
 0.10	2009-05-19
 	- Initial version

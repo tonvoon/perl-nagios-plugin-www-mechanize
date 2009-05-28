@@ -7,7 +7,7 @@ use WWW::Mechanize;
 use Time::HiRes qw(gettimeofday tv_interval);
 use base qw(Nagios::Plugin);
 
-our $VERSION = "0.10";
+our $VERSION = "0.11";
 
 =head1 NAME
 
