@@ -14,4 +14,15 @@ my $success = 0;
 sub set_success { shift; $success = shift; }
 sub success { $success }
 
+my @get_args = ();
+sub get {
+	my $self = shift;
+	@get_args = @_;
+}
+sub get_args { \@get_args };
+
+my @submit_args = ();
+sub submit_form { shift; @submit_args = @_; }
+sub submit_args { \@submit_args };
+
 1;

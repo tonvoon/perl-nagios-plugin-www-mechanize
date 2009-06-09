@@ -1,10 +1,6 @@
 package Nagios::Plugin;
 # Dummy package to find out what is being called
 
-require Exporter;
-our @ISA = qw(Exporter);
-our @EXPORT = qw(CRITICAL);
-
 sub new {
 	my $class = shift;
 	my $new = {};

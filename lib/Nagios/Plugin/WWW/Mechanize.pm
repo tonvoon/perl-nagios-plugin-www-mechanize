@@ -2,12 +2,16 @@ package Nagios::Plugin::WWW::Mechanize;
 use 5.006;
 use warnings;
 use strict;
+use Nagios::Plugin::Functions qw(:codes %ERRORS %STATUS_TEXT @STATUS_CODES);
 use Nagios::Plugin;
 use WWW::Mechanize;
 use Time::HiRes qw(gettimeofday tv_interval);
-use base qw(Nagios::Plugin);
+use Exporter;
+use base qw(Exporter Nagios::Plugin);
 
-our $VERSION = "0.11";
+our @EXPORT = (@STATUS_CODES);
+
+our $VERSION = "0.12";
 
 =head1 NAME
 
@@ -16,17 +20,23 @@ Nagios::Plugin::WWW::Mechanize - Login to a web page as a user and get data as a
 =head1 SYNOPSIS
 
   use Nagios::Plugin::WWW::Mechanize;
-  $np = Nagios::Plugin::WWW::Mechanize->new;
+  $np = Nagios::Plugin::WWW::Mechanize->new( 
+    usage => "Checks number of mailing list users"
+  );
+  $np->getopts;
+
   $np->get( "http://lists.opsview.org/admin/opsview-users/members" );
   $np->submit_form( form_name => "f", fields => { adminpw => "****" } );
   $content = $np->content;
   ($number_of_users) = ($content =~ /(\d+) members total/);
+  $np->nagios_exit( CRITICAL, "Cannot get number of users" ) unless defined $number_of_users;
+
   $np->add_perfdata(
     label => "users",
     value => $number_of_users,
   );
   $np->nagios_exit(
-    0,   # Can't use constants like OK from Nagios::Plugin just yet - please help fix!
+    OK,
     "Number of mailing list users: $number_of_users"
   );
 
@@ -127,35 +137,25 @@ If the mech->get call failed, will call nagios_exit with a CRITICAL error.
 
 Returns the value from mech->get.
 
-=cut
-
-sub get {
-	my ($self, @args) = @_;
-	$self->timer_start;
-	my $res = $self->mech->get( @args );
-	unless ($self->mech->success) {
-		$self->nagios_exit( CRITICAL, $self->mech->content );
-	}
-	$self->timer_end;
-	$res;
-}
-	
 =item submit_form( @args )
 
 Similar to get.
 
 =cut
 
-sub submit_form {
-	my ($self, @args ) = @_;
+sub wrap_mech_call {
+	my ($self, $method, @args ) = @_;
 	$self->timer_start;
-	my $res = $self->mech->submit_form( @args );
+	my $res = $self->mech->$method( @args );
 	unless ($self->mech->success) {
 		$self->nagios_exit( CRITICAL, $self->mech->content );
 	}
 	$self->timer_end;
 	$res;
 }
+
+sub submit_form { shift->wrap_mech_call("submit_form", @_); }
+sub get { shift->wrap_mech_call("get", @_); }
 
 =item content
 
