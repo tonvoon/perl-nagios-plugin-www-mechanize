@@ -1,5 +1,9 @@
 Changes for Perl extension Nagios-Plugin-WWW-Mechanize
 
+0.13	2009-10-27
+	- Increased latency for cpantesters
+	- Fixed synopsis URL
+
 0.12	2009-06-09
 	- Fixed constants propagated from Nagios::Plugin::Functions (OK, WARNING, CRITICAL, UNKNOWN)
 	- Updated synopsis with $np->getopts call

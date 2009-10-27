@@ -19,4 +19,4 @@ $np->timer_start;
 sleep 4;
 $np->timer_end;
 cmp_ok( $np->total_time, ">=", 4, "Timer above 4 seconds" );
-cmp_ok( $np->total_time, "<", 4.09, "Allow 0.09 seconds latency" );
+cmp_ok( $np->total_time, "<", 4.8, "Allow 0.8 seconds latency due to cpantesters servers" );

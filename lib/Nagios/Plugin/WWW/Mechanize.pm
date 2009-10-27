@@ -11,7 +11,7 @@ use base qw(Exporter Nagios::Plugin);
 
 our @EXPORT = (@STATUS_CODES);
 
-our $VERSION = "0.12";
+our $VERSION = "0.13";
 
 =head1 NAME
 
@@ -25,7 +25,7 @@ Nagios::Plugin::WWW::Mechanize - Login to a web page as a user and get data as a
   );
   $np->getopts;
 
-  $np->get( "http://lists.opsview.org/admin/opsview-users/members" );
+  $np->get( "http://lists.opsview.org/lists/admin/opsview-users/members" );
   $np->submit_form( form_name => "f", fields => { adminpw => "****" } );
   $content = $np->content;
   ($number_of_users) = ($content =~ /(\d+) members total/);
